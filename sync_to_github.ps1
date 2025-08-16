@@ -1,32 +1,25 @@
-# sync_to_github.ps1 - автоматическая синхронизация с GitHub
-# Кодировка: UTF-8 без BOM
-
-# Переходим в папку репозитория
-Set-Location -Path "C:\Users\keepe\DeepSeek_Files"
+﻿# sync_to_github.ps1 СЃ РїСЂР°РІРёР»СЊРЅРѕР№ РєРѕРґРёСЂРѕРІРєРѕР№
+$env:GIT_REDIRECT_STDERR = '2>&1'  # РџРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ РѕС€РёР±РѕРє
 
 try {
-    # Проверяем, что это Git-репозиторий
-    if (-not (Test-Path -Path ".\.git")) {
-        Write-Host "Ошибка: Это не Git-репозиторий." -ForegroundColor Red
-        Write-Host "Сначала выполните:"
-        Write-Host "1. git init"
-        Write-Host "2. git remote add origin https://github.com/PopovAL300353/DeepSeek_Files.git"
-        exit 1
+    cd C:\Users\keepe\DeepSeek_Files
+    
+    # РџСЂРѕРІРµСЂРєР° СЂРµРїРѕР·РёС‚РѕСЂРёСЏ
+    if (-not (Test-Path .\.git)) {
+        Write-Host "РћС€РёР±РєР°: РЎРЅР°С‡Р°Р»Р° РІС‹РїРѕР»РЅРёС‚Рµ git init" -ForegroundColor Red
+        exit
     }
 
-    # Добавляем все изменения
+    # РљРѕРјРјРёС‚ СЃ РЅРѕСЂРјР°Р»СЊРЅРѕР№ РєРѕРґРёСЂРѕРІРєРѕР№
+    $commitMsg = "Automatic update: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    
     git add .
-
-    # Создаем коммит с текущей датой
-    $commitMessage = "Автоматическое обновление: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-    git commit -m $commitMessage
-
-    # Отправляем изменения
+    git commit -m $commitMsg
     git push origin main
-
-    Write-Host "Файлы успешно отправлены в GitHub!" -ForegroundColor Green
+    
+    Write-Host "Р¤Р°Р№Р»С‹ СѓСЃРїРµС€РЅРѕ РѕС‚РїСЂР°РІР»РµРЅС‹!" -ForegroundColor Green
 }
 catch {
-    Write-Host "Ошибка при выполнении скрипта: $_" -ForegroundColor Red
-    exit 1
+    Write-Host "РћС€РёР±РєР°: $_" -ForegroundColor Red
 }

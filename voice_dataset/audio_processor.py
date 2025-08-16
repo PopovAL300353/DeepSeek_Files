@@ -1,27 +1,27 @@
-import os
+﻿import os
 import shutil
 import csv
 from datetime import datetime
 
 def process_audio_files():
-    # Настройки кодировки
+    # РќР°СЃС‚СЂРѕР№РєРё РєРѕРґРёСЂРѕРІРєРё
     import sys
     sys.stdout.reconfigure(encoding='utf-8')
     
-    # Создаем папки если их нет
+    # РЎРѕР·РґР°РµРј РїР°РїРєРё РµСЃР»Рё РёС… РЅРµС‚
     os.makedirs("audio/song/passionate", exist_ok=True)
     os.makedirs("audio/song/epic", exist_ok=True)
     os.makedirs("audio/prose/neutral", exist_ok=True)
     
-    # Лог-файл с UTF-8
+    # Р›РѕРі-С„Р°Р№Р» СЃ UTF-8
     with open("processing.log", "w", encoding="utf-8") as log_file:
-        log_file.write(f"=== ЗАПУСК ОБРАБОТКИ {datetime.now()} ===\n")
+        log_file.write(f"=== Р—РђРџРЈРЎРљ РћР‘Р РђР‘РћРўРљР {datetime.now()} ===\n")
     
-    # Обработка файлов
+    # РћР±СЂР°Р±РѕС‚РєР° С„Р°Р№Р»РѕРІ
     for filename in os.listdir("raw_audio"):
         if filename.endswith(".wav"):
             try:
-                # Определяем категорию из имени файла
+                # РћРїСЂРµРґРµР»СЏРµРј РєР°С‚РµРіРѕСЂРёСЋ РёР· РёРјРµРЅРё С„Р°Р№Р»Р°
                 if "_song_passionate" in filename:
                     category = "song/passionate"
                     clean_name = filename.replace("_song_passionate", "")
@@ -34,17 +34,17 @@ def process_audio_files():
                 else:
                     continue
                 
-                # Генерируем новое имя (латиница + нумерация)
+                # Р“РµРЅРµСЂРёСЂСѓРµРј РЅРѕРІРѕРµ РёРјСЏ (Р»Р°С‚РёРЅРёС†Р° + РЅСѓРјРµСЂР°С†РёСЏ)
                 base_name = "".join([c if c.isalnum() else "_" for c in clean_name.split(".")[0]])
                 new_name = f"{base_name}_{len(os.listdir(f'audio/{category}')+1:03d}.wav"
                 
-                # Копируем файл в нужную папку
+                # РљРѕРїРёСЂСѓРµРј С„Р°Р№Р» РІ РЅСѓР¶РЅСѓСЋ РїР°РїРєСѓ
                 shutil.copy2(
                     f"raw_audio/{filename}",
                     f"audio/{category}/{new_name}"
                 )
                 
-                # Запись в лог
+                # Р—Р°РїРёСЃСЊ РІ Р»РѕРі
                 with open("processing.log", "a", encoding="utf-8") as log_file:
                     log_file.write(f"[OK] {filename} -> {new_name}\n")
                     
@@ -52,7 +52,7 @@ def process_audio_files():
                 with open("processing.log", "a", encoding="utf-8") as log_file:
                     log_file.write(f"[ERROR] {filename}: {str(e)}\n")
     
-    # Генерация CSV
+    # Р“РµРЅРµСЂР°С†РёСЏ CSV
     generate_csv()
 
 def generate_csv():
@@ -63,7 +63,7 @@ def generate_csv():
         for root, _, files in os.walk("audio"):
             for file in files:
                 if file.endswith(".wav"):
-                    # Извлекаем текст из имени файла (пример)
+                    # РР·РІР»РµРєР°РµРј С‚РµРєСЃС‚ РёР· РёРјРµРЅРё С„Р°Р№Р»Р° (РїСЂРёРјРµСЂ)
                     text = file.split("_")[0].replace("_", " ")
                     writer.writerow([
                         os.path.join(root, file),
@@ -71,6 +71,6 @@ def generate_csv():
                     ])
 
 if __name__ == "__main__":
-    print("=== ЗАПУСК ПОЛНОЙ ОБРАБОТКИ ===")
+    print("=== Р—РђРџРЈРЎРљ РџРћР›РќРћР™ РћР‘Р РђР‘РћРўРљР ===")
     process_audio_files()
-    print("=== ОБРАБОТКА ЗАВЕРШЕНА ===")
+    print("=== РћР‘Р РђР‘РћРўРљРђ Р—РђР’Р•Р РЁР•РќРђ ===")
