@@ -1,28 +1,23 @@
-# Включаем логирование (записываем все действия в файл)
-Start-Transcript -Path "sync.log" -Append
+Start-Transcript -Path "sync.log" -Append -Encoding UTF8
 
 Write-Host "=== Начало синхронизации с GitHub ===" -ForegroundColor Cyan
 
 try {
-    # Проверяем, есть ли изменения
-    $changes = git status --porcelain
-    if (-not $changes) {
-        Write-Host "Нет изменений для коммита." -ForegroundColor Yellow
-        exit
-    }
-
-    # Добавляем все файлы
+    # Добавляем все изменения
     git add .
     Write-Host "Файлы добавлены в индекс Git" -ForegroundColor Green
 
-    # Создаем коммит с текущей датой
+    # Создаем коммит
     $commitMessage = "Автообновление: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     git commit -m $commitMessage
     Write-Host "Создан коммит: '$commitMessage'" -ForegroundColor Green
 
+    # Получаем изменения с GitHub (если есть)
+    git pull origin main --rebase
+
     # Отправляем изменения
     git push origin main
-    Write-Host "Изменения отправлены на GitHub" -ForegroundColor Green
+    Write-Host "Изменения успешно отправлены на GitHub" -ForegroundColor Green
 
 } catch {
     Write-Host "Ошибка: $_" -ForegroundColor Red
