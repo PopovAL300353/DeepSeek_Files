@@ -1,16 +1,16 @@
-# Простой скрипт переноса WAV-файлов
-$source = "C:\AUDIO_PROJECT\SOURCE"
-$target = "$env:USERPROFILE\DeepSeek_Files\incoming"
+п»ї[Console]::OutputEncoding = [System.Text.Encoding]::UTF8  # Р”РѕР±Р°РІСЊС‚Рµ РІ РЅР°С‡Р°Р»Рѕ СЃРєСЂРёРїС‚Р°
 
-# Создаем папку назначения
-if (!(Test-Path $target)) { 
-    mkdir $target | Out-Null 
+$source_dir = "C:\AUDIO_PROJECT\SOURCE\"
+$incoming_dir = "C:\Users\keepe\DeepSeek_Files\incoming\"
+
+# РЎРѕР·РґР°РµРј РїР°РїРєСѓ incoming (РµСЃР»Рё РЅРµС‚)
+if (-not (Test-Path $incoming_dir)) { 
+    New-Item -Path $incoming_dir -ItemType Directory -Force
 }
 
-# Копируем все WAV-файлы
-Get-ChildItem -Path $source -Recurse -Filter "*.wav" | % {
-    Copy-Item $_.FullName -Destination $target -Force
-    Write-Host "Copied: $($_.Name)"
+# РљРѕРїРёСЂСѓРµРј СЃ РїСЂР°РІРёР»СЊРЅРѕР№ РєРѕРґРёСЂРѕРІРєРѕР№
+Get-ChildItem -Path "$source_dir*\*.WAV" -Recurse | ForEach-Object {
+    $target_path = Join-Path -Path $incoming_dir -ChildPath $_.Name
+    Copy-Item -Path $_.FullName -Destination $target_path -Force
+    Write-Host "[OK] РЎРєРѕРїРёСЂРѕРІР°РЅ: $($_.Name)"  # РўРµРїРµСЂСЊ СЂСѓСЃСЃРєРёР№ С‚РµРєСЃС‚ Р±СѓРґРµС‚ РєРѕСЂСЂРµРєС‚РЅС‹Рј
 }
-
-Write-Host "DONE! Files copied to: $target"
