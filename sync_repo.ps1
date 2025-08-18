@@ -1,48 +1,36 @@
 <#
 .SYNOPSIS
-Точная синхронизация папки C:\Users\keepe\DeepSeek_Files с GitHub-репозиторием.
+Точная синхронизация ПК → GitHub с сохранением имен файлов и папок
 #>
 
-# Установка кодировки UTF-8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$env:GIT_INPUT_ENCODING = "UTF-8"
-$env:GIT_OUTPUT_ENCODING = "UTF-8"
+# Настройки
+$localPath = "C:\Users\keepe\DeepSeek_Files"
+$repoPath = "C:\Users\keepe\DeepSeek_Files"
+$backupDir = "C:\DeepSeek_Backups"
 
-# Пути
-$localPath = "C:\Users\keepe\DeepSeek_Files"  # Локальная папка
-$backupDir = "C:\DeepSeek_Backups"            # Папка для резервных копий
-
-# Создаем папку для бэкапов (если нет)
-if (-not (Test-Path -Path $backupDir)) {
-    New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
+# 1. Создаем резервную копию
+if (-not (Test-Path $backupDir)) { 
+    New-Item -Path $backupDir -ItemType Directory -Force | Out-Null 
 }
-
-# 1. Резервная копия (на всякий случай)
 $backupFolder = "$backupDir\Backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-Copy-Item -Path $localPath -Destination $backupFolder -Recurse -Force
-Write-Host "[✅] Резервная копия создана: $backupFolder" -ForegroundColor Green
+Copy-Item -Path $repoPath -Destination $backupFolder -Recurse -Force
+Write-Host "[✅] Резервная копия создана: $backupFolder" -ForegroundColor Cyan
 
-# 2. Переходим в репозиторий
-Set-Location -Path $localPath
-
-# 3. Очищаем репозиторий (кроме .git и этого скрипта)
-Get-ChildItem -Path $localPath -Force | 
+# 2. Очищаем репозиторий (кроме .git и скрипта)
+Set-Location $repoPath
+Get-ChildItem -Path $repoPath -Force | 
     Where-Object { $_.Name -ne ".git" -and $_.Name -ne "sync_repo.ps1" } | 
     Remove-Item -Recurse -Force
 
-# 4. Копируем ВСЁ из локальной папки обратно (кроме .git и скрипта)
-Get-ChildItem -Path $localPath | 
-    Where-Object { $_.Name -ne ".git" -and $_.Name -ne "sync_repo.ps1" } | 
-    Copy-Item -Destination $localPath -Recurse -Force -ErrorAction SilentlyContinue
+# 3. Копируем с сохранением структуры
+robocopy $localPath $repoPath /MIR /NJH /NJS /NDL /NP /NFL /XD ".git" "DeepSeek_Backups" /XF "sync_repo.ps1"
+Write-Host "[🔄] Файлы скопированы с сохранением структуры" -ForegroundColor Green
 
-# 5. Git: добавляем все изменения
+# 4. Фиксируем изменения
 git add --all
-
-# 6. Коммит с текущей датой
-$commitMessage = "🔄 AUTOSYNC: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+$commitMessage = "🔄 SYNC: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 git -c "i18n.commitEncoding=UTF-8" commit -m $commitMessage
 
-# 7. Принудительная отправка в GitHub (--force)
-git push --force origin main
-
-Write-Host "[✅] Репозиторий полностью синхронизирован с ПК!" -ForegroundColor Green
+# 5. Отправляем в GitHub
+git push origin main
+Write-Host "[✅] Репозиторий обновлен! Имена сохранены." -ForegroundColor Green
